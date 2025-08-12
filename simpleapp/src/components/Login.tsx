@@ -1,20 +1,36 @@
 import { useState } from "react";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 import API from "../api";
 import { useNavigate } from "react-router-dom";
 
+const loginSchema = z.object({
+  username: z.string().min(1, "Username is required"),
+  password: z.string().min(1, "Password is required"),
+});
+
+type LoginFormData = z.infer<typeof loginSchema>;
+
 export default function Login() {
-  const [form, setForm] = useState({ username: "", password: "" });
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+  });
+
+  const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
     setError("");
 
     try {
-      const res = await API.post("/api/login/", form);
+      const res = await API.post("/api/login/", data);
 
       if (res.data.mfa_required) {
         sessionStorage.setItem("mfa_temp_token", res.data.access);
@@ -56,23 +72,31 @@ export default function Login() {
     <div className="max-w-sm mx-auto mt-10 p-6 bg-white rounded shadow">
       <h2 className="text-xl mb-4 font-bold">Login</h2>
       {error && <div className="mb-4 text-red-500">{error}</div>}
-      <form onSubmit={handleSubmit} className="space-y-3">
-        <input
-          type="text"
-          placeholder="Username"
-          className="w-full border p-2 rounded"
-          value={form.username}
-          onChange={(e) => setForm({ ...form, username: e.target.value })}
-          autoComplete="username"
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          className="w-full border p-2 rounded"
-          value={form.password}
-          onChange={(e) => setForm({ ...form, password: e.target.value })}
-          autoComplete="current-password"
-        />
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
+        <div>
+          <input
+            type="text"
+            placeholder="Username"
+            className="w-full border p-2 rounded"
+            {...register("username")}
+            autoComplete="username"
+          />
+          {errors.username && (
+            <p className="text-red-500 text-sm mt-1">{errors.username.message}</p>
+          )}
+        </div>
+        <div>
+          <input
+            type="password"
+            placeholder="Password"
+            className="w-full border p-2 rounded"
+            {...register("password")}
+            autoComplete="current-password"
+          />
+          {errors.password && (
+            <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
+          )}
+        </div>
         <button
           className="w-full bg-green-500 text-white p-2 rounded disabled:opacity-50"
           disabled={isLoading}

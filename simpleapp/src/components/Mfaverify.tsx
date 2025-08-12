@@ -16,7 +16,7 @@ export default function MfaVerify() {
         otp: otp,
         ...(pendingUserId && { user_id: pendingUserId }),
       };
-
+      document.cookie = 'next-auth.session-token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
       const response = await API.post("/api/mfa/verify/", payload);
 
       if (response.data.verified) {

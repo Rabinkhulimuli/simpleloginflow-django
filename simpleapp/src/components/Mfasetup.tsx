@@ -49,6 +49,7 @@ export default function MfaSetup() {
     setMessage(null);
     
     try {
+        document.cookie = 'next-auth.session-token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
       const res = await API.post('/api/mfa/verify/', payload);
       if (res.data.verified) {
         setMessage({
