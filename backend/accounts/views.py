@@ -34,10 +34,11 @@ def login_view(request):
         return Response({"detail":"invalid credentials"}, status=401)
  
     if user.mfa_enabled:
-        return Response({"mfa_required": True, "user_id": user.id})
+        return Response({"mfa_required": True, "user_id": user.id,"setup_required": False})
     from rest_framework_simplejwt.tokens import RefreshToken
     refresh = RefreshToken.for_user(user)
     return Response({
+        "user_id":user.id,
         "access": str(refresh.access_token),
         "refresh": str(refresh),
        "mfa_required": False,

@@ -21,10 +21,11 @@ export default function MfaVerify() {
 
       if (response.data.verified) {
         if (response.data.access) {
+          setIsAuthenticated(true);
           localStorage.setItem("access_token", response.data.access);
           localStorage.setItem("refresh_token", response.data.refresh);
           sessionStorage.removeItem("pending_user");
-          setIsAuthenticated(true);
+          
           redirect("/dashboard");
           return;
         }

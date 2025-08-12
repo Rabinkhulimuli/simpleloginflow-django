@@ -5,6 +5,7 @@ const API = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+  withCredentials:true
 });
 
 API.interceptors.request.use(
@@ -18,11 +19,13 @@ API.interceptors.request.use(
 
     const token =
       localStorage.getItem("access_token") ||
-      sessionStorage.getItem("access_token");
+      sessionStorage.getItem("access_token")||
+      sessionStorage.getItem("mfa_setup_token")
 
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+     console.log('Request headers:', config.headers.Authorization);
     return config;
   },
   (error) => {

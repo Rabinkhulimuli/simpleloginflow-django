@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import api from '../api';
 import { useNavigate } from 'react-router-dom';
-
+import API from '../api';
 export default function MfaSetup() {
   const [qrCode, setQrCode] = useState('');
   const [secret, setSecret] = useState('');
@@ -17,7 +16,7 @@ export default function MfaSetup() {
     setIsLoading(prev => ({...prev, setup: true}));
     setMessage(null);
     try {
-      const res = await api.get('/api/mfa/setup/');
+      const res = await API.get('/api/mfa/setup/');
       setQrCode(res.data.qr_code);
       setSecret(res.data.secret);
     } catch (error) {
@@ -38,15 +37,22 @@ export default function MfaSetup() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (code.length !== 6) return;
-    
+
+      const pendingUserId = sessionStorage.getItem("pending_user");
+
+      const payload = {
+        otp: code,
+        ...(pendingUserId && { user_id: pendingUserId }),
+      };
+
     setIsLoading(prev => ({...prev, verification: true}));
     setMessage(null);
     
     try {
-      const res = await api.post('/api/mfa/verify/', { code });
+      const res = await API.post('/api/mfa/verify/', payload);
       if (res.data.verified) {
         setMessage({
-          text: 'MFA enabled successfully! Redirecting...',
+          text: '2FA enabled successfully! Redirecting...',
           type: 'success'
         });
       

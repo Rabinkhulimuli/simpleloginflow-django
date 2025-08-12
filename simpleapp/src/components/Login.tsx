@@ -1,17 +1,13 @@
 import { useState } from "react";
 import API from "../api";
-import { Navigate, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
   const [form, setForm] = useState({ username: "", password: "" });
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { setIsAuthenticated,isAuthenticated } = useAuth();
-  if(isAuthenticated){
-    return <Navigate to="/dashboard"/>
-  }
+  
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
@@ -26,6 +22,7 @@ export default function Login() {
         navigate("/mfa-verify");
       } else if (res.data.setup_required) {
         sessionStorage.setItem("mfa_setup_token", res.data.access);
+        sessionStorage.setItem("pending_user", res.data.user_id);
         console.log("seeeion data", sessionStorage.getItem("mfa_setup_token"));
         navigate("/mfa-setup");
       } else {
@@ -33,7 +30,6 @@ export default function Login() {
         navigate("/");
       }
 
-      setIsAuthenticated(true);
     } catch (error) {
       setError("Login failed. Please check your credentials.");
       console.error("Login error:", error);
